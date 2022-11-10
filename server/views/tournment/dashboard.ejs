@@ -1,1 +1,237 @@
-Dashboard
+<%- include ../partials/header.ejs %>
+
+<main class="container dashboard" id="app">
+  
+    <div class="row">
+        <div class="col-md-offset-1 col-md-10">
+          <h3>Tournments </h3>
+        
+          <a @click="newEntry()" class="btn btn-primary"
+            v-if="page == '' " ><i class="fa fa-plus"></i> Add a tournment</a
+          >
+          <br />
+          <div class="table-responsive"  v-if="page == '' ">
+            <table class="table table-bordered table-striped table-hover">
+              <thead>
+                <tr>
+                  <th class="text-center">Name</th>
+                  <th class="text-center">Description</th>
+                  <th class="text-center">Enroll Date</th>
+                  <th class="text-center">Has Start</th>
+                  <th class="text-center">Has Finished</th>
+                  <th class="text-center"><br /></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in listing">
+                    
+      
+                    <td class="text-center">{{row.name}}</td>
+                    <td class="text-center">{{row.description}}</td>
+                    <td class="text-center">{{row.enroll_start_at.substr(0,10)}} - {{row.enroll_end_at.substr(0,10)}}</td>
+                    <td class="text-center">{{row.has_started ? "Y" : "N"}}</td>
+                    <td class="text-center">{{row.has_finished ? "Y" : "N"}}</td>
+      
+                    <td class="text-center">
+                    
+                      <a @click="edit(row)" class="btn btn-primary">edit</a>
+                      <a @click="remove(row)" class="btn btn-primary">remove</a>
+                    </td>
+      
+                    
+                  </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <form class="form" method="post" v-if="page == 'edit' ">
+            <div class="form-group">
+              <label for="NameTextField">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                v-model="dataobject.name"
+                value=""
+                required
+              />
+            </div>
+
+            <div class="form-group">
+                <label for="NameTextField">Description</label>
+                <textarea
+                  type="text"
+                  class="form-control"
+                  v-model="dataobject.description"
+                  value=""
+                  
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="NameTextField">Enroll Start At (YYYY-mm-dd)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="dataobject.enroll_start_at"
+                  value=""
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="NameTextField">Enroll End At (YYYY-mm-dd)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="dataobject.enroll_end_at"
+                  value=""
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="NameTextField">Number of players</label>
+                <select  class="form-control" v-model="dataobject.no_of_players">
+                    <option value="8">8</option>
+                    <option value="16">16</option>
+                    <option value="32">32</option>
+                </select>
+               
+              </div>
+
+              <div class="form-group">
+                <label for="NameTextField">Started</label>
+                <input
+                  type="checkbox"
+                  style="width:auto"
+                 
+                  v-model="dataobject.has_started"
+                  value="1"
+                  
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="NameTextField">Finished</label>
+                <input
+                type="checkbox"
+               
+                style="width:auto"
+                v-model="dataobject.has_finished"
+                value="1"
+                
+              />
+              </div>
+    
+         
+            <button type="button" @click="saveform" class="btn btn-primary">
+                <i class="fa fa-check-square-o"></i> Submit
+              </button>
+              <a @click="page=''" class="btn btn-warning"
+                ><i class="fa fa-undo"></i> Cancel</a
+              >
+           
+          </form>
+          
+        </main>
+          <div class="col-md-offset-1 col-md-10 text-center">
+            <ul class="pagination pagination-lg pager" id="myPager"></ul>
+          </div>
+          
+        </div>
+    </div>
+
+  
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.3/axios.min.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<script>
+    const { createApp } = Vue
+  
+    createApp({
+      data() {
+        return {
+          page : "",
+
+          dataobject : "",
+
+          listing : [],
+        }
+      },
+
+      methods: {
+        newEntry : function()
+        {
+            this.dataobject = {
+                "_id" : "",
+                "name" : "",
+                "description" : "",
+                "enroll_start_at" : "",
+                "enroll_end_at" : "",
+                "no_of_players" : "",
+                "has_started" : 0,
+                "has_finished" : 0,
+            };
+            this.page = "edit";
+        },
+
+        edit : function(row)
+        {
+            //alert(row._id);
+            this.dataobject = row;
+            this.dataobject.enroll_start_at = this.dataobject.enroll_start_at.substr(0,10)
+            this.dataobject.enroll_end_at = this.dataobject.enroll_end_at.substr(0,10)
+            this.dataobject.has_started = this.dataobject.has_started ? 1 : 0
+            this.dataobject.has_finished = this.dataobject.has_finished ? 1 : 0
+            
+         
+            this.page = "edit";
+        },
+
+        saveform : function()
+        {
+            if (this.dataobject._id != "" )
+            {
+                this.dataobject.has_started = this.dataobject.has_started == 1 ? true : false;
+                this.dataobject.has_finished = this.dataobject.has_finished == 1 ? true : false;
+                axios.put('/tournments/'+this.dataobject._id , this.dataobject ).then(response => {
+                    this.page = "";
+                    this.fetchListing();
+                })
+            }
+            else
+            {
+                this.dataobject.has_started = this.dataobject.has_started == 1 ? true : false;
+                this.dataobject.has_finished = this.dataobject.has_finished == 1 ? true : false;
+                axios.post('/tournments/' , this.dataobject ).then(response => {
+                    this.page = "";
+                    this.fetchListing();
+                })
+            }
+        },
+
+        remove : function(row)
+        {
+            axios.delete('/tournments/'+row._id).then(response => {this.fetchListing();})
+        },
+
+        fetchListing : function()
+        {
+            axios.get('/tournments/').then(response => (this.listing = response.data.data))
+        }
+      }, 
+
+      mounted : function()
+      {
+        this.fetchListing();
+      }
+    }).mount('#app')
+</script>
+
+<%- include ../partials/footer.ejs %>
+
+    
+
+   

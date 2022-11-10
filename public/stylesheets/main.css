@@ -1,0 +1,10 @@
+.full {width:100%}
+.topbar .row {
+    align-items: center;
+}
+.topbar nav i {margin-right:10px}
+.topbar nav a {color:#000000;margin:0 20px;text-decoration:none}
+
+.homepage {text-align:center}
+h1 {padding:20px 0;margin:0px}
+.logo {margin:0 20%;width:50%;}
